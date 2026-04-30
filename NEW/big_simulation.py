@@ -27,10 +27,10 @@ import time
 
 # grid dimensions and number of runs per distribution
 # set H=50 for the final version, 30 is faster for testing
-H      = 30
+H      = 50
 W      = H * 2
 RUNS   = 200
-OUTPUT = "data.csv"
+OUTPUT = "data100.csv"
 
 
 def calculate_fractal_dimension(path_coords, grid_size):

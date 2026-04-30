@@ -13,7 +13,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 
-df = pd.read_csv("/Users/jakubb/Desktop/Thesis/NEW/data.csv")
+df = pd.read_csv("/Users/jakubb/Desktop/Thesis/NEW/data100.csv")
 
 def get_family(label):
     if label.startswith("bimodal"):   return "bimodal"

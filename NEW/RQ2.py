@@ -18,7 +18,7 @@ from sklearn.linear_model import LinearRegression
 from sklearn.metrics import r2_score
 from sklearn.model_selection import train_test_split
 
-df = pd.read_csv("data.csv")
+df = pd.read_csv("/Users/jakubb/Desktop/Thesis/NEW/data100.csv")
 
 def get_family(label):
     if label.startswith("bimodal"):   return "bimodal"
@@ -162,7 +162,7 @@ best_tau_pred = results_tau[best_tau][1]
 best_res_pred = results_res[best_res][1]
 
 fig, axes = plt.subplots(1, 2, figsize=(14, 6))
-fig.suptitle("RQ2 — predicted vs actual (test set, 20% of data)\n"
+fig.suptitle("RQ2 - predicted vs actual (test set, 20% of data)\n"
              "points on the diagonal = perfect prediction", fontsize=13)
 
 axes[0].scatter(y_tau[idx_test], best_tau_pred, c=test_colors, alpha=0.7, s=50)
