@@ -11,9 +11,9 @@
 # Fitting separately within each regime should give much higher R².
 #
 # Produces 3 figures:
-#   regime_split_scatter.png     — tortuosity coloured by regime across all families
-#   regime_split_predicted.png   — predicted vs actual for each regime
-#   regime_split_comparison.png  — R² bar chart: global vs per-regime
+#   regime_split_scatter.png     - tortuosity coloured by regime across all families
+#   regime_split_predicted.png   - predicted vs actual for each regime
+#   regime_split_comparison.png  - R² bar chart: global vs per-regime
 
 import pandas as pd
 import numpy as np
@@ -77,7 +77,7 @@ print(f"\nEasy — mean tortuosity : {below['mean_tortuosity'].mean():.4f}")
 print(f"Hard — mean tortuosity : {above['mean_tortuosity'].mean():.4f}")
 
 
-# ── helper: build feature matrix ───────────────────────────────────────────
+# helper: build feature matrix 
 def make_X(data):
     return np.column_stack([
         data["dist_mean"],
@@ -111,7 +111,7 @@ def fit_report(name, data):
     return model, r2_test, model.predict(X), y
 
 
-# ── fit formulas ───────────────────────────────────────────────────────────
+# fit formulas 
 print("\n" + "="*60)
 print("  FORMULA FITTING RESULTS")
 print("="*60)
@@ -121,7 +121,7 @@ model_below, r2_below, pred_below, y_below = fit_report("Below threshold only", 
 model_above, r2_above, pred_above, y_above = fit_report("Above threshold only", above)
 
 
-# ── figure 1: scatter coloured by regime ──────────────────────────────────
+# figure 1: scatter coloured by regime 
 fig, axes = plt.subplots(1, 2, figsize=(11, 5))
 fig.suptitle("Two regimes in tortuosity behaviour\n"
              "Easy (μ < 5): paths hunt for cheap edges → higher τ\n"
