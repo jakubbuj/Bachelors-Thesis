@@ -1,16 +1,11 @@
 # rq3_analysis.py
-# RQ3: greedy algorithm vs dijkstra — fair comparison
-#
-# both algorithms use 4-connectivity and edge weights — same model
-# the only difference is decision making:
-#   dijkstra — globally optimal, sees the whole grid
-#   greedy   — locally optimal, picks cheapest neighbour at each step
+# RQ3: greedy algorithm vs dijkstra comparison
 #
 # produces 4 figures:
-#   rq3_comparison.png      — greedy vs dijkstra tortuosity and resistance
-#   rq3_gap_by_family.png   — how much worse greedy is per family
+#   rq3_comparison.png       — greedy vs dijkstra tortuosity and resistance
+#   rq3_gap_by_family.png    — how much worse greedy is per family
 #   rq3_formula_transfer.png — does the formula predict both algorithms?
-#   rq3_efficiency.png      — efficiency ratio: how close is greedy to optimal?
+#   rq3_efficiency.png       — efficiency ratio: how close is greedy to optimal?
 
 import pandas as pd
 import numpy as np
@@ -48,8 +43,7 @@ def get_family(label):
     return "random"
 
 
-# ── dijkstra single run ────────────────────────────────────────────────────
-
+# dijkstra
 def dijkstra_single_run(height, width, probs):
     G = nx.grid_2d_graph(height, width)
     for (u, v) in G.edges():
@@ -71,9 +65,7 @@ def dijkstra_single_run(height, width, probs):
     }
 
 
-# ── greedy single run ──────────────────────────────────────────────────────
-# 4-connected, edge weights, gravity penalty to keep path moving downward
-
+# greedy — gravity penalty: down=0, sideways=+2, up=+8
 def greedy_single_run(height, width, probs):
     G = nx.grid_2d_graph(height, width)
     for (u, v) in G.edges():
@@ -126,8 +118,7 @@ def run_distribution(run_fn, probs, n_runs=RUNS):
     }
 
 
-# ── load data and pick subset ──────────────────────────────────────────────
-df_all = pd.read_csv("/Users/jakubb/Desktop/Thesis/NEW/data100.csv")
+df_all = pd.read_csv("/Users/jakubb/Desktop/Thesis/FINAL/data100.csv")
 df_all["family"] = df_all["dist_label"].apply(get_family)
 
 subset_rows = []
@@ -137,10 +128,8 @@ for fam in df_all["family"].unique():
 subset = pd.concat(subset_rows).reset_index(drop=True)
 
 print(f"comparing greedy vs dijkstra on {len(subset)} distributions")
-print(f"grid: {H}x{W}   connectivity: 4 (edges only)   runs: {RUNS}")
+print(f"grid: {H}x{W}   runs: {RUNS}")
 
-
-# ── run both algorithms ────────────────────────────────────────────────────
 dijk_results   = []
 greedy_results = []
 t0 = time.time()
@@ -169,10 +158,6 @@ comp      = pd.concat([subset.reset_index(drop=True), dijk_df, greedy_df], axis=
 comp["tau_gap"] = comp["greedy_mean_tortuosity"] - comp["dijk_mean_tortuosity"]
 comp["res_gap"] = comp["greedy_mean_resistance"] - comp["dijk_mean_resistance"]
 
-# efficiency ratio: dijkstra_resistance / greedy_resistance
-# 1.0 = greedy matches optimal exactly
-# 0.5 = greedy pays twice what dijkstra pays
-# avoid division by zero for distributions where both are ~0
 comp["efficiency"] = np.where(
     comp["greedy_mean_resistance"] > 1,
     comp["dijk_mean_resistance"] / comp["greedy_mean_resistance"],
@@ -183,9 +168,9 @@ print(f"\ndone in {(time.time()-t0)/60:.1f} minutes")
 legend_handles = [mpatches.Patch(color=c, label=f) for f, c in COLORS.items()]
 
 
-# ── figure 1: comparison scatter ──────────────────────────────────────────
+# figure 1: comparison scatter
 fig, axes = plt.subplots(1, 2, figsize=(13, 6))
-fig.suptitle("RQ3 — greedy vs dijkstra (4-connected, edge weights)\n"
+fig.suptitle("RQ3 — greedy vs dijkstra\n"
              "points above the diagonal = greedy is worse", fontsize=13)
 
 for ax, xcol, ycol, xlabel, ylabel, title in [
@@ -216,7 +201,7 @@ plt.show()
 print("saved: rq3_comparison.png")
 
 
-# ── figure 2: gap by family ────────────────────────────────────────────────
+# figure 2: gap by family
 families_present = list(comp["family"].unique())
 gap_colors       = [COLORS[f] for f in families_present]
 
@@ -245,7 +230,7 @@ plt.show()
 print("saved: rq3_gap_by_family.png")
 
 
-# ── figure 3: formula transfer ─────────────────────────────────────────────
+# figure 3: formula transfer
 X = np.column_stack([
     comp["dist_mean"],
     comp["dist_mean"]**2,
@@ -290,42 +275,30 @@ plt.show()
 print("saved: rq3_formula_transfer.png")
 
 
-# ── figure 4: efficiency ratio ─────────────────────────────────────────────
-# efficiency = dijkstra_resistance / greedy_resistance
-# 1.0 = greedy matches dijkstra exactly (perfect local decisions)
-# 0.5 = greedy pays twice as much as dijkstra
-# shows which environments greedy handles well vs poorly
-
+# figure 4: efficiency ratio
 fig, axes = plt.subplots(1, 2, figsize=(13, 5))
 fig.suptitle("RQ3 — greedy efficiency ratio\n"
              "efficiency = dijkstra R / greedy R  "
              "(1.0 = matches optimal, lower = worse)", fontsize=13)
 
-# left: efficiency vs mean
 for fam, color in COLORS.items():
     sub = comp[comp["family"] == fam]
-    axes[0].scatter(sub["dist_mean"], sub["efficiency"],
-                    c=color, alpha=0.75, s=60)
-axes[0].axhline(1.0, color="black", linestyle="--", linewidth=1.2,
-                label="greedy = optimal")
-axes[0].set_xlabel("mean resistance μ")
-axes[0].set_ylabel("efficiency (dijkstra R / greedy R)")
-axes[0].set_title("efficiency vs mean resistance\nhigher μ = greedy closer to optimal")
-axes[0].legend(fontsize=9)
-axes[0].grid(True, alpha=0.3)
+    axes[0].scatter(sub["dist_mean"], sub["efficiency"], c=color, alpha=0.75, s=60)
+    axes[1].scatter(sub["dist_var"],  sub["efficiency"], c=color, alpha=0.75, s=60)
 
-# right: efficiency vs variance
-for fam, color in COLORS.items():
-    sub = comp[comp["family"] == fam]
-    axes[1].scatter(sub["dist_var"], sub["efficiency"],
-                    c=color, alpha=0.75, s=60)
-axes[1].axhline(1.0, color="black", linestyle="--", linewidth=1.2,
-                label="greedy = optimal")
-axes[1].set_xlabel("variance σ²")
-axes[1].set_ylabel("efficiency (dijkstra R / greedy R)")
-axes[1].set_title("efficiency vs variance\nhigher σ² = greedy further from optimal")
-axes[1].legend(fontsize=9)
-axes[1].grid(True, alpha=0.3)
+for ax, xlabel, title in [
+    (axes[0], "mean resistance μ",
+     "efficiency vs mean resistance\nhigher μ = greedy closer to optimal"),
+    (axes[1], "variance σ²",
+     "efficiency vs variance\nhigher σ² = greedy further from optimal"),
+]:
+    ax.axhline(1.0, color="black", linestyle="--", linewidth=1.2,
+               label="greedy = optimal")
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel("efficiency (dijkstra R / greedy R)")
+    ax.set_title(title)
+    ax.legend(fontsize=9)
+    ax.grid(True, alpha=0.3)
 
 fig.legend(handles=legend_handles, loc="lower center", ncol=4,
            fontsize=9, bbox_to_anchor=(0.5, -0.05))
@@ -335,7 +308,11 @@ plt.show()
 print("saved: rq3_efficiency.png")
 
 
-# ── thesis numbers ─────────────────────────────────────────────────────────
+# save results
+comp.to_csv("rq3_results.csv", index=False)
+print("\nsaved: rq3_results.csv")
+
+# thesis numbers
 print("\n" + "="*55)
 print("  THESIS NUMBERS")
 print("="*55)
