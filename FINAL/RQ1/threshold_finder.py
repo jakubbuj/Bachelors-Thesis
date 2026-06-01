@@ -47,9 +47,9 @@ for p0 in p0_sweep:
 
 df = pd.DataFrame(results)
 
-# threshold = first p0 where mean resistance drops below 0.1
-below_one = df[df["mean_R"] < 0.1]
-threshold = below_one["p0"].min() if len(below_one) > 0 else None
+# threshold = first p0 where mean resistance is exactly 0
+strictly_zero = df[df["mean_R"] == 0.0]
+threshold = strictly_zero["p0"].min() if len(strictly_zero) > 0 else None
 
 print(f"\nEmpirical threshold: pc = {threshold}")
 print(f"Directed theory:     pc = 0.5000")

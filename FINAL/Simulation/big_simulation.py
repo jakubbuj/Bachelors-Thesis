@@ -8,7 +8,6 @@ a dataset where each row is one distribution type + what paths through
 it look like on average. This is then used to fit predictive formulas.
 
 Output: data.csv
-Runtime: roughly 30-45 minutes on a normal laptop.
 
 I tested 7 types of distributions (234 total):
   - bimodal: only R=0 and R=10, varying how many free edges there are

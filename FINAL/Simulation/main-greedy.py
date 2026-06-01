@@ -120,7 +120,7 @@ def run_simulation():
     for spine in ax.spines.values():
         spine.set_edgecolor('#555555')
 
-    plt.title(f"8-Neighbor Greedy Lightning Simulation\n{height}×{width} Grid",
+    plt.title(f" Greedy Lightning Simulation\n{height}×{width} Grid",
               fontsize=14, color='#cccccc')
     plt.xlabel("Grid Width",  color='#aaaaaa')
     plt.ylabel("Grid Height", color='#aaaaaa')
