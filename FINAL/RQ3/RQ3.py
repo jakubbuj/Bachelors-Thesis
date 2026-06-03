@@ -2,10 +2,10 @@
 # RQ3: greedy algorithm vs dijkstra comparison
 #
 # produces 4 figures:
-#   rq3_comparison.png       — greedy vs dijkstra tortuosity and resistance
-#   rq3_gap_by_family.png    — how much worse greedy is per family
-#   rq3_formula_transfer.png — does the formula predict both algorithms?
-#   rq3_efficiency.png       — efficiency ratio: how close is greedy to optimal?
+#   rq3_comparison.png       - greedy vs dijkstra tortuosity and resistance
+#   rq3_gap_by_family.png    - how much worse greedy is per family
+#   rq3_formula_transfer.png - does the formula predict both algorithms?
+#   rq3_efficiency.png       - efficiency ratio: how close is greedy to optimal?
 
 import pandas as pd
 import numpy as np
@@ -16,9 +16,9 @@ from sklearn.metrics import r2_score
 import networkx as nx
 import time
 
-H    = 50
-W    = 100
-RUNS = 200
+H    = 400     
+W    = 800
+RUNS = 15
 
 plt.rcParams.update({"font.size": 12, "figure.dpi": 130})
 
@@ -107,7 +107,9 @@ def greedy_single_run(height, width, probs):
 def run_distribution(run_fn, probs, n_runs=RUNS):
     probs   = np.array(probs, dtype=float)
     probs  /= probs.sum()
+    t0      = time.perf_counter()
     records = [run_fn(H, W, probs) for _ in range(n_runs)]
+    elapsed = time.perf_counter() - t0
     df      = pd.DataFrame(records)
     return {
         "mean_resistance": df["total_resistance"].mean(),
@@ -115,6 +117,7 @@ def run_distribution(run_fn, probs, n_runs=RUNS):
         "mean_tortuosity": df["tortuosity"].mean(),
         "std_tortuosity":  df["tortuosity"].std(),
         "mean_lateral":    df["max_lateral_dev"].mean(),
+        "mean_time_ms":    (elapsed / n_runs) * 1000,
     }
 
 
@@ -308,13 +311,71 @@ plt.show()
 print("saved: rq3_efficiency.png")
 
 
+# figure 5: runtime comparison
+comp["dijk_time_ms"]   = [r["mean_time_ms"] for r in dijk_results]
+comp["greedy_time_ms"] = [r["mean_time_ms"] for r in greedy_results]
+comp["speedup"]        = comp["dijk_time_ms"] / comp["greedy_time_ms"]
+
+fig, axes = plt.subplots(1, 3, figsize=(16, 5))
+fig.suptitle("RQ3 — runtime comparison\n"
+             "mean time per single simulation run (ms)", fontsize=13)
+
+for fam, color in COLORS.items():
+    sub = comp[comp["family"] == fam]
+    axes[0].scatter(sub["dist_mean"], sub["dijk_time_ms"],
+                    c=color, alpha=0.75, s=60, marker="o")
+    axes[0].scatter(sub["dist_mean"], sub["greedy_time_ms"],
+                    c=color, alpha=0.75, s=60, marker="^")
+
+axes[0].set_xlabel("mean μ")
+axes[0].set_ylabel("time per run (ms)")
+axes[0].set_title("runtime vs mean μ\ncircle = Dijkstra, triangle = greedy")
+axes[0].grid(True, alpha=0.3)
+
+# speedup ratio per distribution
+for fam, color in COLORS.items():
+    sub = comp[comp["family"] == fam]
+    axes[1].scatter(sub["dist_mean"], sub["speedup"], c=color, alpha=0.75, s=60)
+
+axes[1].axhline(1.0, color="black", linestyle="--", linewidth=1.2,
+                label="equal runtime")
+axes[1].set_xlabel("mean μ")
+axes[1].set_ylabel("speedup (Dijkstra time / greedy time)")
+axes[1].set_title("speedup ratio vs mean μ\n>1 means greedy is faster")
+axes[1].legend(fontsize=9)
+axes[1].grid(True, alpha=0.3)
+
+# bar chart: mean runtime per algorithm per family
+families_present = list(comp["family"].unique())
+x = np.arange(len(families_present))
+w = 0.35
+mean_dijk   = [comp[comp["family"]==f]["dijk_time_ms"].mean()   for f in families_present]
+mean_greedy = [comp[comp["family"]==f]["greedy_time_ms"].mean() for f in families_present]
+
+axes[2].bar(x - w/2, mean_dijk,   w, label="Dijkstra", color="#e41a1c", alpha=0.8)
+axes[2].bar(x + w/2, mean_greedy, w, label="greedy",   color="#377eb8", alpha=0.8)
+axes[2].set_xticks(x)
+axes[2].set_xticklabels(families_present, rotation=30, fontsize=9)
+axes[2].set_ylabel("mean time per run (ms)")
+axes[2].set_title("mean runtime by family")
+axes[2].legend(fontsize=9)
+axes[2].grid(True, alpha=0.3, axis="y")
+
+fig.legend(handles=legend_handles, loc="lower center", ncol=4,
+           fontsize=9, bbox_to_anchor=(0.5, -0.05))
+plt.tight_layout()
+plt.savefig("rq3_runtime.png", bbox_inches="tight")
+plt.show()
+print("saved: rq3_runtime.png")
+
+
 # save results
 comp.to_csv("rq3_results.csv", index=False)
 print("\nsaved: rq3_results.csv")
 
 # thesis numbers
 print("\n" + "="*55)
-print("  THESIS NUMBERS")
+print("  RESULTS ")
 print("="*55)
 print(f"  distributions compared   : {len(comp)}")
 print(f"  mean tortuosity gap      : {comp['tau_gap'].mean():+.4f}")
@@ -326,7 +387,12 @@ print(f"  max efficiency ratio     : {comp['efficiency'].max():.4f}  "
       f"({comp.loc[comp['efficiency'].idxmax(), 'dist_label']})")
 print(f"  formula R² dijkstra      : {r2_d:.4f}")
 print(f"  formula R² greedy        : {r2_g:.4f}")
+print(f"\n  mean Dijkstra time/run   : {comp['dijk_time_ms'].mean():.2f} ms")
+print(f"  mean greedy time/run     : {comp['greedy_time_ms'].mean():.2f} ms")
+print(f"  mean speedup ratio       : {comp['speedup'].mean():.2f}x  (Dijkstra / greedy)")
 print("\n  efficiency by family:")
 print(comp.groupby("family")["efficiency"].agg(["mean","min","max"]).round(3).to_string())
+print("\n  speedup by family:")
+print(comp.groupby("family")["speedup"].agg(["mean","min","max"]).round(2).to_string())
 print("\n  gap by family:")
 print(comp.groupby("family")[["tau_gap","res_gap"]].mean().round(3).to_string())
