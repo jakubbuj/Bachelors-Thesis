@@ -1,4 +1,4 @@
-# Lightning Path Simulation — Code Overview
+# Lightning Path Simulation - Code Overview
 
 Bachelor thesis: *Lightning Path Simulation on Random Resistive Grids*
 Author: Jakub Bujak - Maastricht University, DACS
