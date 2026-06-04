@@ -2,18 +2,18 @@
 # RQ2: can a formula predict path properties from distribution parameters alone?
 #
 # produces 12 figures:
-#   rq2_formula_comparison.png          - R² bar chart for all 4 formulas (test set)
-#   rq2_predicted_vs_actual.png         - predicted vs actual for best formula (test set)
-#   rq2_residuals.png                   - tortuosity residuals by family
-#   rq2_regime_split_comparison.png     - R² bar chart hard vs easy regimes (test set)
-#   rq2_regime_split_predicted.png      - predicted vs actual per regime (test set)
-#   rq2_regime_split_scatter.png        - all distributions coloured hard vs easy
-#   rq2_formulas_resistance.png         - all 4 formulas for resistance
-#   rq2_formulas_tortuosity.png         - all 4 formulas for tortuosity
-#   rq2_surfaces_resistance.png         - fitted surfaces F2 F3 F4 for resistance
-#   rq2_surfaces_tortuosity.png         - fitted surfaces F2 F3 F4 for tortuosity
-#   rq2_regime_surface_resistance.png   - regime split plane for resistance
-#   rq2_regime_surface_tortuosity.png   - regime split plane for tortuosity
+#   rq2_formula_comparison.png          — R² bar chart for all 4 formulas (test set)
+#   rq2_predicted_vs_actual.png         — predicted vs actual for best formula (test set)
+#   rq2_residuals.png                   — tortuosity residuals by family
+#   rq2_regime_split_comparison.png     — R² bar chart hard vs easy regimes (test set)
+#   rq2_regime_split_predicted.png      — predicted vs actual per regime (test set)
+#   rq2_regime_split_scatter.png        — all distributions coloured hard vs easy
+#   rq2_formulas_resistance.png         — all 4 formulas for resistance
+#   rq2_formulas_tortuosity.png         — all 4 formulas for tortuosity
+#   rq2_surfaces_resistance.png         — fitted surfaces F2 F3 F4 for resistance
+#   rq2_surfaces_tortuosity.png         — fitted surfaces F2 F3 F4 for tortuosity
+#   rq2_regime_surface_resistance.png   — regime split plane for resistance
+#   rq2_regime_surface_tortuosity.png   — regime split plane for tortuosity
 
 import pandas as pd
 import numpy as np
@@ -24,7 +24,7 @@ from sklearn.metrics import r2_score
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import PolynomialFeatures
 
-df = pd.read_csv("/Users/jakubb/Desktop/Thesis/NEW/data100.csv")
+df = pd.read_csv("/Users/jakubb/Desktop/Thesis/FINAL/data100.csv")
 
 def get_family(label):
     if label.startswith("bimodal"):   return "bimodal"
@@ -218,14 +218,21 @@ print(f"\nRegime split at μ = {SPLIT}:")
 print(f"  hard (μ≥{SPLIT}): τ R²={r2_hard_tau:.3f}  R R²={r2_hard_res:.3f}  n={len(hard_idx)}")
 print(f"  easy (μ<{SPLIT}):  τ R²={r2_easy_tau:.3f}  R R²={r2_easy_res:.3f}  n={len(easy_idx)}")
 
-fig, ax = plt.subplots(figsize=(9, 5))
-regimes   = ["hard (μ≥5)\nτ", "easy (μ<5)\nτ", "hard (μ≥5)\nR", "easy (μ<5)\nR"]
-r2_vals   = [r2_hard_tau, r2_easy_tau, r2_hard_res, r2_easy_res]
-bar_colors = ["#377eb8", "#aec7e8", "#e41a1c", "#f7a8a8"]
-bars = ax.bar(regimes, r2_vals, color=bar_colors, alpha=0.85)
+# global tortuosity R² on test set (from Polynomial formula)
+r2_global_tau = results_tau["Polynomial"][0]
+
+# hard and easy R² — separate model per regime (same as regime_r2 above)
+# r2_hard_tau and r2_easy_tau are already computed by regime_r2
+
+fig, ax = plt.subplots(figsize=(8, 5))
+labels     = ["global τ", f"hard (μ≥{SPLIT}) τ", f"easy (μ<{SPLIT}) τ"]
+r2_vals    = [r2_global_tau, r2_hard_tau, r2_easy_tau]
+bar_colors = ["#999999", "#377eb8", "#aec7e8"]
+bars = ax.bar(labels, r2_vals, color=bar_colors, alpha=0.85)
 ax.axhline(0, color="black", linewidth=0.8)
 ax.set_ylabel("R² on test set")
-ax.set_title(f"RQ2 — regime split at μ = {SPLIT}")
+ax.set_title(f"RQ2 — tortuosity prediction: global vs regime split at μ = {SPLIT}")
+ax.set_ylim(-0.1, 1.05)
 ax.grid(True, alpha=0.3, axis="y")
 for bar in bars:
     h = bar.get_height()
@@ -235,7 +242,7 @@ for bar in bars:
 plt.tight_layout()
 plt.savefig("rq2_regime_split_comparison.png", bbox_inches="tight")
 plt.show()
-print("saved: regime_split_comparison.png")
+print("saved: rq2_regime_split_comparison.png")
 
 
 # figure 5: regime split predicted vs actual
@@ -355,27 +362,24 @@ for target, y, ylabel in [
     fig.suptitle(f"All four formulas — {target}", fontsize=13)
 
     for col, (name, X, color) in enumerate(all_sets):
-        model = LinearRegression().fit(X, y)
-        pred  = model.predict(X)
-        r2    = r2_score(y, pred)
+        model = LinearRegression().fit(X[idx_train], y[idx_train])
+        pred  = model.predict(X[idx_test])
+        r2    = r2_score(y[idx_test], pred)
 
-        # top: predictions vs mu
         ax_top = axes[0, col]
-        ax_top.scatter(X_mean, y, color="#cccccc", s=15, alpha=0.5, label="actual")
-        ax_top.scatter(X_mean[mu_sort], pred[mu_sort],
-                       color=color, s=12, alpha=0.7, label="predicted")
+        ax_top.scatter(X_mean[idx_test], y[idx_test], color="#cccccc", s=15, alpha=0.5, label="actual")
+        ax_top.scatter(X_mean[idx_test], pred, color=color, s=12, alpha=0.7, label="predicted")
         ax_top.set_xlabel("mean μ")
         ax_top.set_ylabel(ylabel)
         ax_top.set_title(f"{name}\nR²={r2:.3f}")
         ax_top.legend(fontsize=8)
         ax_top.grid(True, alpha=0.3)
 
-        # bottom: predicted vs actual
         ax_bot = axes[1, col]
-        lim = [min(y.min(), pred.min()) - 0.02 * abs(y.max()),
-               max(y.max(), pred.max()) + 0.02 * abs(y.max())]
+        lim = [min(y[idx_test].min(), pred.min()) - 0.02 * abs(y.max()),
+               max(y[idx_test].max(), pred.max()) + 0.02 * abs(y.max())]
         ax_bot.plot(lim, lim, "k--", linewidth=1.5, label="perfect")
-        ax_bot.scatter(y, pred, color=color, s=18, alpha=0.6)
+        ax_bot.scatter(y[idx_test], pred, color=color, s=18, alpha=0.6)
         ax_bot.set_xlabel(f"actual {ylabel}")
         ax_bot.set_ylabel(f"predicted {ylabel}")
         ax_bot.set_title(f"predicted vs actual  R²={r2:.3f}")
@@ -389,8 +393,8 @@ for target, y, ylabel in [
     print(f"saved: {fname}")
 
 
-# figure 8: 3D surfaces — F2 plane, F3 plane, F4 curved surface
-skew_mean = X_skew.mean()
+# figure 8: 3D surfaces — F2 plane, F3 plane, F4 curved surface (test set)
+skew_mean = X_skew[idx_test].mean()
 
 for target, y_data, ylabel, surf_color in [
     ("resistance", y_res, "resistance R", "Reds"),
@@ -404,8 +408,9 @@ for target, y_data, ylabel, surf_color in [
         ("F3: Linear(μ,σ²,skew)", X3_all),
         ("F4: Polynomial",         X4_all),
     ]):
-        model = LinearRegression().fit(X_all, y_data)
-        r2    = r2_score(y_data, model.predict(X_all))
+        model = LinearRegression().fit(X_all[idx_train], y_data[idx_train])
+        pred  = model.predict(X_all[idx_test])
+        r2    = r2_score(y_data[idx_test], pred)
 
         if name == "F2: Linear(μ,σ²)":
             Z = model.coef_[0] * MU + model.coef_[1] * VAR + model.intercept_
@@ -418,7 +423,8 @@ for target, y_data, ylabel, surf_color in [
                  + model.intercept_)
 
         ax = fig.add_subplot(1, 3, col + 1, projection="3d")
-        ax.scatter(X_mean, X_var, y_data, color="#aaaaaa", s=12, alpha=0.35)
+        ax.scatter(X_mean[idx_test], X_var[idx_test], y_data[idx_test],
+                   color="#aaaaaa", s=12, alpha=0.35)
         ax.plot_surface(MU, VAR, Z, alpha=0.45, cmap=surf_color)
         ax.set_xlabel("mean μ")
         ax.set_ylabel("variance σ²")
@@ -432,7 +438,7 @@ for target, y_data, ylabel, surf_color in [
     print(f"saved: {fname}")
 
 
-# figure 9: hard vs easy — F2 plane fitted separately per regime
+# figure 9: hard vs easy — degree-2 polynomial fitted on train, evaluated on test
 SPLIT = 5.0
 hard_mask = X_mean >= SPLIT
 easy_mask = X_mean <  SPLIT
@@ -448,18 +454,25 @@ for target, y_data, ylabel, h_color, e_color in [
         (hard_mask, f"hard (μ≥{SPLIT})", h_color),
         (easy_mask, f"easy (μ<{SPLIT})",  e_color),
     ]):
-        X_sub = X2_all[mask]
-        y_sub = y_data[mask]
-        model = LinearRegression().fit(X_sub, y_sub)
-        r2    = r2_score(y_sub, model.predict(X_sub))
+        tr_idx = np.intersect1d(idx_train, np.where(mask)[0])
+        te_idx = np.intersect1d(idx_test,  np.where(mask)[0])
+
+        poly  = PolynomialFeatures(degree=2, include_bias=True)
+        X_tr  = poly.fit_transform(X_mu_var[tr_idx])
+        X_te  = poly.transform(X_mu_var[te_idx])
+        model = LinearRegression().fit(X_tr, y_data[tr_idx])
+        r2    = r2_score(y_data[te_idx], model.predict(X_te))
 
         mu_g   = np.linspace(X_mean[mask].min(), X_mean[mask].max(), 25)
         var_g  = np.linspace(X_var[mask].min(),  X_var[mask].max(),  25)
         Mg, Vg = np.meshgrid(mu_g, var_g)
-        Z = model.coef_[0] * Mg + model.coef_[1] * Vg + model.intercept_
+        Z = model.predict(
+            poly.transform(np.column_stack([Mg.ravel(), Vg.ravel()]))
+        ).reshape(Mg.shape)
 
         ax = fig.add_subplot(1, 2, col + 1, projection="3d")
-        ax.scatter(X_mean[mask], X_var[mask], y_sub, color="#aaaaaa", s=8, alpha=0.4)
+        ax.scatter(X_mean[te_idx], X_var[te_idx], y_data[te_idx],
+                   color="#aaaaaa", s=8, alpha=0.4)
         ax.plot_surface(Mg, Vg, Z, alpha=0.45, cmap=cmap)
         ax.set_xlabel("μ", labelpad=4, fontsize=9)
         ax.set_ylabel("σ²", labelpad=4, fontsize=9)
