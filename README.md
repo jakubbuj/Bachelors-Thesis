@@ -175,29 +175,6 @@ RUNS = 200  # runs per distribution
 
 ---
 
-## Figures needed for LaTeX compilation
-
-Place all of the following in the same folder as `thesis_draft.tex`:
-
-```
-lightning_path_thesis.png
-rq1_scatter_overview.png
-rq1_phase_transition.png
-rq1_fixed_mean_variance.png
-rq2_formula_comparison.png
-rq2_predicted_vs_actual.png
-rq2_regime_split_predicted.png
-rq2_regime_split_comparison.png
-rq2_regime_surface_tortuosity.png
-rq2_formulas_resistance.png
-rq2_formulas_tortuosity.png
-rq3_comparison.png
-rq3_efficiency.png
-rq3_gap_by_family.png
-```
-
----
-
 ## Acknowledgements
 
 Parts of this codebase were developed with assistance from Claude
