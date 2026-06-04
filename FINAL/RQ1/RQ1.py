@@ -1,12 +1,17 @@
 # rq1_analysis.py
 # RQ1: how do path properties depend on the resistance distribution?
+#
+# produces 3 figures:
+#   rq1_scatter_overview.png      - tortuosity and resistance vs mean and variance
+#   rq1_phase_transition.png      - bimodal sweep showing resistance collapse and tortuosity peak
+#   rq1_fixed_mean_variance.png   - fixed mean family showing independent effect of variance
 
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 
-df = pd.read_csv("/Users/jakubb/Desktop/Thesis/FINAL/data100.csv")
+df = pd.read_csv("/Users/jakubb/Desktop/Thesis/FINAL/data100.csv") # change the path to yours
 
 def get_family(label):
     if label.startswith("bimodal"):   return "bimodal"

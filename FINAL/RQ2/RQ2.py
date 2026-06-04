@@ -2,18 +2,18 @@
 # RQ2: can a formula predict path properties from distribution parameters alone?
 #
 # produces 12 figures:
-#   rq2_formula_comparison.png          — R² bar chart for all 4 formulas (test set)
-#   rq2_predicted_vs_actual.png         — predicted vs actual for best formula (test set)
-#   rq2_residuals.png                   — tortuosity residuals by family
-#   rq2_regime_split_comparison.png     — R² bar chart hard vs easy regimes (test set)
-#   rq2_regime_split_predicted.png      — predicted vs actual per regime (test set)
-#   rq2_regime_split_scatter.png        — all distributions coloured hard vs easy
-#   rq2_formulas_resistance.png         — all 4 formulas for resistance
-#   rq2_formulas_tortuosity.png         — all 4 formulas for tortuosity
-#   rq2_surfaces_resistance.png         — fitted surfaces F2 F3 F4 for resistance
-#   rq2_surfaces_tortuosity.png         — fitted surfaces F2 F3 F4 for tortuosity
-#   rq2_regime_surface_resistance.png   — regime split plane for resistance
-#   rq2_regime_surface_tortuosity.png   — regime split plane for tortuosity
+#   rq2_formula_comparison.png          - R² bar chart for all 4 formulas (test set)
+#   rq2_predicted_vs_actual.png         - predicted vs actual for best formula (test set)
+#   rq2_residuals.png                   - tortuosity residuals by family
+#   rq2_regime_split_comparison.png     - R² bar chart hard vs easy regimes (test set)
+#   rq2_regime_split_predicted.png      - predicted vs actual per regime (test set)
+#   rq2_regime_split_scatter.png        - all distributions coloured hard vs easy
+#   rq2_formulas_resistance.png         - all 4 formulas for resistance
+#   rq2_formulas_tortuosity.png         - all 4 formulas for tortuosity
+#   rq2_surfaces_resistance.png         - fitted surfaces F2 F3 F4 for resistance
+#   rq2_surfaces_tortuosity.png         - fitted surfaces F2 F3 F4 for tortuosity
+#   rq2_regime_surface_resistance.png   - regime split plane for resistance
+#   rq2_regime_surface_tortuosity.png   - regime split plane for tortuosity
 
 import pandas as pd
 import numpy as np
