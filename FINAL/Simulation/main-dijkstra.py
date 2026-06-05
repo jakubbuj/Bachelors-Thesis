@@ -73,8 +73,8 @@ def run_simulation():
     ax.add_collection(lc)
 
     # manual colorbar
-    sm = plt.cm.ScalarMappable(cmap='Greys_r',
-                               norm=mcolors.Normalize(vmin=0, vmax=10))
+    sm = plt.cm.ScalarMappable(cmap='Greys',
+                           norm=mcolors.Normalize(vmin=0, vmax=10))
     sm.set_array([])
     cbar = plt.colorbar(sm, ax=ax, fraction=0.03, pad=0.02)
     cbar.set_label("Edge resistance R", fontsize=10)
